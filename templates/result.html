@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container card">
+    <h1>Test Completed ✅</h1>
+
+    <h2>Score: {{ score }} / {{ total }}</h2>
+    <p>Percentage: <b>{{ percentage }}%</b></p>
+    <p>🏆 Highest Score: <b>{{ highest }}</b></p>
+
+    <hr>
+
+    <h2>Answer Review</h2>
+
+    {% for r in review %}
+        <div style="margin-bottom:15px;">
+            <p><b>{{ loop.index }}. {{ r.question }}</b></p>
+
+            <p>
+                Your Answer:
+                <span style="color: {{ 'green' if r.is_correct else 'red' }};">
+                    {{ r.selected or "Not Answered" }}
+                </span>
+            </p>
+
+            {% if not r.is_correct %}
+                <p style="color:green;">
+                    Correct Answer: {{ r.correct }}
+                </p>
+            {% endif %}
+        </div>
+        <hr>
+    {% endfor %}
+
+    <a href="/">
+        <button>Go Back to Home</button>
+    </a>
+</div>
+
+</body>
+</html>

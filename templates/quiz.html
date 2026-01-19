@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ section }} Quiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container card">
+    <h2>{{ section }} Quiz</h2>
+
+    <!-- Timer + Theme -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <p><b>Time Left:</b> <span id="time"></span></p>
+        <button type="button" id="themeToggle">🌙</button>
+    </div>
+
+    <!-- Question Palette -->
+    <div id="palette" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px;"></div>
+
+    <!-- Progress Bar -->
+    <div class="progress">
+        <div class="progress-bar" id="progress"></div>
+    </div>
+
+    <form method="POST" id="quizForm">
+        {% for q_index, q in enumerate(questions) %}
+            <div class="question-block question" data-index="{{ q_index }}" style="display:none;">
+                <p><b>{{ q_index + 1 }}. {{ q[0] }}</b></p>
+
+                {% for opt in q[1] %}
+                    <label>
+                        <input type="radio"
+                               name="q{{ q_index }}"
+                               value="{{ opt }}">
+                        {{ opt }}
+                    </label>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button type="button" id="prevBtn">Previous</button>
+            <button type="button" id="nextBtn">Next</button>
+            <button type="submit" id="submitBtn" style="display:none;">Submit</button>
+        </div>
+    </form>
+</div>
+
+<script>
+/* ================= TIMER (20 MIN) ================= */
+let totalTime = 20 * 60;
+let timer = document.getElementById("time");
+let form = document.getElementById("quizForm");
+
+function formatTime(sec) {
+    let m = Math.floor(sec / 60);
+    let s = sec % 60;
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+}
+timer.innerText = formatTime(totalTime);
+
+let interval = setInterval(() => {
+    totalTime--;
+    timer.innerText = formatTime(totalTime);
+    if (totalTime <= 0) {
+        clearInterval(interval);
+        alert("Time up! Submitting quiz.");
+        form.submit();
+    }
+}, 1000);
+
+/* ================= QUESTIONS ================= */
+let current = 0;
+let questions = document.querySelectorAll(".question");
+let prevBtn = document.getElementById("prevBtn");
+let nextBtn = document.getElementById("nextBtn");
+let submitBtn = document.getElementById("submitBtn");
+
+/* ================= PALETTE ================= */
+const palette = document.getElementById("palette");
+questions.forEach((_, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.innerText = i + 1;
+    b.style.width = "40px";
+    b.onclick = () => {
+        current = i;
+        showQuestion(current);
+    };
+    palette.appendChild(b);
+});
+
+/* ================= SHOW QUESTION ================= */
+function showQuestion(index) {
+    questions.forEach(q => q.style.display = "none");
+    questions[index].style.display = "block";
+
+    prevBtn.style.display = index === 0 ? "none" : "block";
+    nextBtn.style.display = index === questions.length - 1 ? "none" : "block";
+    submitBtn.style.display = index === questions.length - 1 ? "block" : "none";
+
+    document.getElementById("progress").style.width =
+        ((index + 1) / questions.length) * 100 + "%";
+}
+
+prevBtn.onclick = () => {
+    if (current > 0) current--, showQuestion(current);
+};
+nextBtn.onclick = () => {
+    if (current < questions.length - 1) current++, showQuestion(current);
+};
+
+/* ================= AUTO SAVE ANSWERS ================= */
+let saved = JSON.parse(localStorage.getItem("answers") || "{}");
+
+questions.forEach((q, i) => {
+    q.querySelectorAll("input").forEach(r => {
+        if (saved[`q${i}`] === r.value) r.checked = true;
+        r.addEventListener("change", () => {
+            saved[`q${i}`] = r.value;
+            localStorage.setItem("answers", JSON.stringify(saved));
+            palette.children[i].style.background = "#22c55e";
+        });
+    });
+});
+
+form.addEventListener("submit", () => {
+    localStorage.removeItem("answers");
+});
+
+/* ================= THEME TOGGLE ================= */
+const toggle = document.getElementById("themeToggle");
+if (localStorage.getItem("theme") === "light") {
+    document.body.classList.add("light");
+}
+toggle.onclick = () => {
+    document.body.classList.toggle("light");
+    localStorage.setItem(
+        "theme",
+        document.body.classList.contains("light") ? "light" : "dark"
+    );
+};
+
+// init
+showQuestion(current);
+</script>
+
+</body>
+</html>
