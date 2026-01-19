@@ -5,6 +5,14 @@ The platform supports **multiple quiz sections**, **timed assessments**, **progr
 
 ---
 
+## 🚀 Live Demo
+
+🔗 **Live Application:**  
+👉 [your-live-demo-link-here](https://quiz-app-qaro.onrender.com)
+
+📌 Try out the features in real time and explore the project functionality.
+
+
 ## 🚀 Features
 
 ### ✅ Core Functionality
